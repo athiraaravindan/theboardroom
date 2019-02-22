@@ -17,5 +17,5 @@ module.exports.getAllUsers = () => {
 };
 
 module.exports.updateUser = (query, data) => {
-    return User.update(query, data).exec();
+    return User.updateOne(query, data).exec();
 };
