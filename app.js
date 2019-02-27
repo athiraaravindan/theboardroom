@@ -75,6 +75,7 @@ const express = require('express');
 //gapi***************************************************************************
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var meetingRouter = require('./routes/meetings');
 
 const corsOptions = {
   origin: '*',
@@ -97,6 +98,7 @@ app.use('/users', ejwt({
   // issuer: 'https://localhost:3000/'
 }).unless({path: ['/generateToken']}), usersRouter);
 app.use('/', indexRouter);
+app.use('/meeting', meetingRouter);
 // app.use('/users', usersRouter);
 
 // app.use('/users', usersRouter);

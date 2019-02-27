@@ -1,3 +1,4 @@
+
 var express = require('express');
 var router = express.Router();
 const app = express(),
@@ -6,6 +7,11 @@ const app = express(),
     fbAuth = require('./../auth');
 const userService = require('../service/user.service')
 const jwt = require('jsonwebtoken');
+
+const fs = require('fs');
+const readline = require('readline');
+const {google} = require('googleapis');
+
 router.get('/test', function(req, res, next) {
     res.json({"testing":"success"})
 })
@@ -178,5 +184,15 @@ router.get('/auth/linkedin/callback',
         res.status(200).json({ success: 1, response: inUsers })
     });
 // ........................siginin with linkedin end.......................//
+
+
+
+
+
+
+router.post('/add_to_calender', async function(req, res, next) {
+   
+})
+
 
 module.exports = router;
