@@ -11,6 +11,7 @@ router.post('/create_meeting', async function (req, res, next) {
     //     meetingService.createMeeting()
     // res.json({akhil:"response"})
     console.log(req.body)
+
     // If modifying these scopes, delete token.json.
     const SCOPES = ['https://www.googleapis.com/auth/calendar'];
     // The file token.json stores the user's access and refresh tokens, and is
@@ -19,11 +20,13 @@ router.post('/create_meeting', async function (req, res, next) {
     const TOKEN_PATH = 'token.json';
 
     // Load client secrets from a local file.
-    fs.readFile('credentials.json', (err, content) => {
-        if (err) return console.log('Error loading client secret file:', err);
-        // Authorize a client with credentials, then call the Google Calendar API.
-        authorize(JSON.parse(content), listEvents);
-    });
+    if (req.body.sentToCalender == true) {
+        fs.readFile('credentials.json', (err, content) => {
+            if (err) return console.log('Error loading client secret file:', err);
+            // Authorize a client with credentials, then call the Google Calendar API.
+            authorize(JSON.parse(content), listEvents);
+        });
+    }
 
     /**
      * Create an OAuth2 client with the given credentials, and then execute the
@@ -82,23 +85,35 @@ router.post('/create_meeting', async function (req, res, next) {
      */
     function listEvents(auth) {
         const calendar = google.calendar({ version: 'v3', auth });
+        let duration = req.body.meeting_duration;
+        var splict = duration.split(":")
+        var endDate = moment(req.body.meeting_date + " " + req.body.meeting_duration)//.add(splict[0], 'hours').add(splict[1], 'minutes');
+        var momentFormate = moment.tz(req.body.meeting_date + " " + req.body.meeting_start_time, req.body.time_zone);
+        var startDateTime = momentFormate.utc().format();
+        var enddatae = moment(startDateTime).add(splict[0], 'hours');  // see the cloning?
+        var enddataFinal = moment(enddatae).add(splict[1], 'minutes');  // see the cloning?
+        var endDateTime = enddataFinal.utc().format();
+
+
+
+
         var event = {
             'summary': req.body.topic,
-            'location': req.body.location,
-            'description': req.body.description,
+            'location': "tvm",
+            'description': req.body.agenda,
             'start': {
-                'dateTime': req.body.startDateTime,
-                'timeZone': req.body.startTimeZone,
+                'dateTime': startDateTime,
+                'timeZone': req.body.time_zone,
             },
             'end': {
-                'dateTime': req.body.endDateTime,
-                'timeZone': req.body.endTimeZone,
+                'dateTime': endDateTime,
+                'timeZone': req.body.time_zone,
             },
             'recurrence': [
                 'RRULE:FREQ=DAILY;COUNT=2'
             ],
             'attendees': [
-                { 'email': req.body.sendToEmail },
+                { 'email': "akhil.bp@enfintechnologies.com" },
                 //   {'email': 'akhil.bp@enfintechnologies.com'},
             ],
             'reminders': {
@@ -121,17 +136,28 @@ router.post('/create_meeting', async function (req, res, next) {
             } else {
 
                 console.log('Event created: %s', event.summary);
+                // let addToCalender = {
+                //     topic: req.body.topic,
+                //     description: req.body.agenda,
+                //     startDateTime: startDateTime,
+                //     endDateTime: endDateTime,
+                //     startTimeZone: req.body.time_zone,
+                //     endTimeZone: req.body.time_zone,
+                //     location: "tvm",
+                //     sendToEmail: "athira@enfintechnologies.com",
+                //     userID: req.body.id
+
+                // }
                 let meeting = {
-                    UserID: req.body.userID,
+                    UserID: req.body.id,
                     topic: req.body.topic,
-                    agenda: req.body.description,
-                    meeting_date: req.body.startDateTime,
-                    meeting_start_time: req.body.startDateTime,
-                    meeting_duration: "02:30",
-                    time_zone: req.body.startTimeZone
+                    meeting_date: startDateTime,
+                    meeting_start_time: req.body.meeting_start_time,
+                    meeting_duration: req.body.meeting_duration,
+                    time_zone: req.body.time_zone
                 }
                 let saveMeeting = meetingService.createMeeting(meeting);
-                res.json({ success: 1, saveMeeting: saveMeeting })
+                res.json({ success: saveMeeting })
             }
         });
         //   calendar.events.list({
@@ -165,31 +191,81 @@ router.post('/get_meeting', async function (req, res, next) {
     let meetings = await meetingService.getAllMeeting({ UserID: req.body.id })
     res.json({ response: meetings })
 })
+router.post('/get_Upcoming_meeting', async function (req, res, next) {
+    console.log(req.body)
+    response = [];
+    let meetings = await meetingService.getAllMeeting({ UserID: req.body.id.id })
+    for (var val of meetings) {
+        // console.log(val)
+        let a = moment(val.meeting_date).format('DD/MM/YYYY');
+        let b = moment(req.body.date.date).format('DD/MM/YYYY');
 
-router.get('/temp', async function (req, res, next) {
+        console.log(val.meeting_date, req.body.date.date)
+        if (val.meeting_date >= req.body.date.date) {
+            response.push(val)
+        }
+    }
+    res.json({ response: response })
+})
+router.post('/delete_meeting', async function (req, res, next) {
+    console.log(req.body)
+    let delete_meeting = await meetingService.deleteMeeting({ _id: req.body.id })
+    console.log(delete_meeting)
+    res.json({ success: delete_meeting, response: req.body.id })
+})
+// router.post('/schedule_meeting', async function (req, res, next) {
+//     res.json({response:req.body})
+// })
+
+
+router.post('/test', async function (req, res, next) {
     // let today = Date.now()
     // const utc = moment('27 Jan 2019').utc().format();
     // let local = moment.utc(utc).local()
     // console.log(local)
-  
-    
-    var a = moment.tz("2019-02-26 04:17", "Asia/Taipei");
-    var b = moment.tz("2019-02-26 04:17", "America/Toronto");
-    
+
+    // console.log(req.body)
+    // let duration = req.body.meeting_duration;
+    // var splict = duration.split(":")
+    // var endDateTime = moment(req.body.meeting_date + " " + req.body.meeting_duration).add(splict[0], 'hours').add(splict[1], 'minutes');
+    // var momentFormate = moment.tz(req.body.meeting_date + " " + req.body.meeting_duration);
+    // var startDateTime = momentFormate.utc().format();
+
+    // let addToCalender = {
+    //     topic: req.body.topic,
+    //     description: req.body.agenda,
+    //     startDateTime: startDateTime,
+    //     endDateTime: endDateTime,
+    //     startTimeZone: req.body.time_zone,
+    //     endTimeZone: req.body.time_zone,
+    //     location: "tvm",
+    //     sendToEmail: "athira@enfintechnologies.com",
+    //     userID: req.body.id
+
+    // }
+    var a = moment.tz("2019-03-10 14:00", "Asia/Kolkata");
+    var b = moment.tz("2019-03-10 14:00", "America/Toronto");
+
     var c = a.format(); // 2013-11-18T19:55:00+08:00
     var d = b.format(); // 2013-11-18T06:55:00-05:00
-    
+
     var e = a.utc().format(); // 2013-11-18T11:55Z
     var f = b.utc().format(); // 2013-11-18T11:55Z
-            let result = {
-                a: a,
-                b: b,
-                c:c,
-                d:d,
-                e:e,
-                f:f
-            }
-    res.json({ res: result })
+    let result = {
+        a: a,
+        b: b,
+        c: c,
+        d: d,
+        e: e,
+        f: f
+    }
+    var timestring2 = "2013-05-09T02:00:00Z";
+    // var startdate = moment(timestring2);
+    // var expected_enddate = moment(timestring2);
+    var returned_endate = moment(timestring2).add(6, 'hours');  // see the cloning?
+    var dddd = moment(returned_endate).add(30, 'minutes');  // see the cloning?
+
+    res.json({ res: dddd })
 })
 
 module.exports = router;

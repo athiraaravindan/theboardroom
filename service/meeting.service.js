@@ -21,3 +21,8 @@ module.exports.getMeetings = () => {
 module.exports.updateMeeting = (query, data) => {
     return Meeting.updateOne(query, data).exec();
 };
+
+module.exports.deleteMeeting = (query) => {
+    console.log(query,"hh")
+    return Meeting.deleteOne(query).exec();
+};
