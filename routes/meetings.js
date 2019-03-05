@@ -113,7 +113,7 @@ router.post('/create_meeting', async function (req, res, next) {
                 'RRULE:FREQ=DAILY;COUNT=2'
             ],
             'attendees': [
-                { 'email': "akhil.bp@enfintechnologies.com" },
+                { 'email': req.body.mail },
                 //   {'email': 'akhil.bp@enfintechnologies.com'},
             ],
             'reminders': {
@@ -129,7 +129,7 @@ router.post('/create_meeting', async function (req, res, next) {
             auth: auth,
             calendarId: 'primary',
             resource: event,
-        }, function (err, event) {
+        }, async function  (err, event) {
             if (err) {
                 console.log('There was an error contacting the Calendar service: ' + err);
                 return;
@@ -156,7 +156,7 @@ router.post('/create_meeting', async function (req, res, next) {
                     meeting_duration: req.body.meeting_duration,
                     time_zone: req.body.time_zone
                 }
-                let saveMeeting = meetingService.createMeeting(meeting);
+                let saveMeeting = await meetingService.createMeeting(meeting);
                 res.json({ success: saveMeeting })
             }
         });
