@@ -99,7 +99,7 @@ router.post('/create_meeting', async function (req, res, next) {
 
         var event = {
             'summary': req.body.topic,
-            'location': "tvm",
+            'location': "abcd",
             'description': req.body.agenda,
             'start': {
                 'dateTime': startDateTime,
@@ -150,6 +150,7 @@ router.post('/create_meeting', async function (req, res, next) {
                 // }
                 let meeting = {
                     UserID: req.body.id,
+                    agenda: req.body.agenda,
                     topic: req.body.topic,
                     meeting_date: startDateTime,
                     meeting_start_time: req.body.meeting_start_time,
@@ -157,7 +158,7 @@ router.post('/create_meeting', async function (req, res, next) {
                     time_zone: req.body.time_zone
                 }
                 let saveMeeting = await meetingService.createMeeting(meeting);
-                res.json({ success: saveMeeting })
+                res.json({ success: 1,response: saveMeeting })
             }
         });
         //   calendar.events.list({
@@ -213,6 +214,33 @@ router.post('/delete_meeting', async function (req, res, next) {
     console.log(delete_meeting)
     res.json({ success: delete_meeting, response: req.body.id })
 })
+router.post('/update_meeting', async function (req, res, next) {
+    console.log(req.body)
+
+    try{
+        meetingService.updateMeeting({
+          _id:req.body.id
+        },{
+          $set: 
+          { agenda: req.body.agenda,
+            topic: req.body.topic,            
+            meeting_date: req.body.meeting_date,
+            meeting_start_time:req.body.meeting_start_time,
+            meeting_duration:  req.body.meeting_duration,
+            time_zone:req.body.time_zone
+           } 
+        }).then((_doc)=>{
+          console.log(_doc)
+          res.status(200).json({success: 1,response: "schedule updated"
+          });
+        })
+      }
+      catch(e){
+          res.json({success:0,response:null})
+      }
+
+})
+
 // router.post('/schedule_meeting', async function (req, res, next) {
 //     res.json({response:req.body})
 // })

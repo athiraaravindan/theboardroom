@@ -110,9 +110,8 @@ router.get('/auth/facebook/callback',
         let fbUsers = {
             socialID: req.user.id,
             name: req.user.displayName,
-            profilePictureUrl: 'https://graph.facebook.com/dashboard/' + req.user.id + '/picture?type=square',
-            login_type: "fb",
-            emailAddress:"No email found"
+            profilePictureUrl: 'https://graph.facebook.com/' + req.user.id + '/picture?type=square',
+            login_type: "fb"
 
         }
         console.log(fbUsers, "fbUsers");

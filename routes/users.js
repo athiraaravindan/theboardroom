@@ -24,7 +24,7 @@ router.post('/updateUser', async function (req, res, next) {
     },{
       $set: 
       { name: req.body.name,
-        email: req.body.email,
+        emailAddress: req.body.email,
         phone: req.body.phone,
         company: req.body.company,
         company_size: req.body.company_size,
@@ -38,6 +38,35 @@ router.post('/updateUser', async function (req, res, next) {
         response: "status updated"
       });
     })
+  }
+  catch(e){
+    res.json({res:e})
+
+  }
+
+})
+router.post('/updateUserEmail', async function (req, res, next) {
+  // let user = await userServ.updateUser(req.body);
+  let checkGmail = await userServ.getUser({ emailAddress:req.body.email });
+
+  console.log(req.body,checkGmail)
+  
+  try{
+    if(checkGmail == null){ 
+     userServ.updateUser({
+      _id:req.body._id
+    },{
+      $set: 
+      { emailAddress: req.body.email
+       } 
+    }).then((_doc)=>{
+      console.log(_doc)
+      res.status(200).json({success: 1,response: "email updated"
+      });
+    })
+  }else{
+    res.json({success:0,response:"exist"})
+  }
   }
   catch(e){
     res.json({res:e})
