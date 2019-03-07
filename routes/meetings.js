@@ -2,11 +2,30 @@ var express = require('express');
 var router = express.Router();
 const meetingService = require('../service/meeting.service');
 var moment = require('moment-timezone')
+var userServ = require('../service/user.service')
 
 const fs = require('fs');
 const readline = require('readline');
 const { google } = require('googleapis');
 
+router.post('/getuser', async function (req, res, next) {
+    console.log(req.body)
+    let user = await userServ.getUser({ _id: req.body.uid });
+    console.log(user)
+    if (user)
+      res.json({ success: 1, response: user })
+    else
+      res.json({ success: 0, response: null })
+  });
+  router.post('/forgot_password', async function (req, res, next) {
+    console.log(req.body)
+    let checkGmail = await userServ.getUser({ emailAddress: req.body.email });
+    if(checkGmail){
+        res.json({success:1,response:checkGmail})
+    }else{
+        res.json({success:0,response:null})
+    }
+    })
 router.post('/create_meeting', async function (req, res, next) {
     //     meetingService.createMeeting()
     // res.json({akhil:"response"})

@@ -66,16 +66,16 @@ router.get('/auth/google/callback',
         let oldUser = await userService.getUser({ socialID: GmailUsers.socialID });
         let checkGmail = await userService.getUser({ emailAddress: GmailUsers.emailAddress });
         if (checkGmail != null) {
-            res.redirect('http://localhost:4200/dashboard/' + checkGmail._id + '/index');
+            res.redirect('http://localhost:4200/temp/' + checkGmail._id );
         }
         else if (oldUser) {
-            res.redirect('http://localhost:4200/dashboard/' + oldUser._id + '/index');
+            res.redirect('http://localhost:4200/temp/' + oldUser._id );
         }
         else {
             let newUser = await userService.createUser(GmailUsers)
             if (newUser) {
                 console.log("successfully saved to db")
-                res.redirect('http://localhost:4200/dashboard/' + newUser._id+ '/index');
+                res.redirect('http://localhost:4200/temp/' + newUser._id);
             }
         }
         res.status(200).json({ success: 1, response: GmailUsers })
@@ -117,11 +117,11 @@ router.get('/auth/facebook/callback',
         console.log(fbUsers, "fbUsers");
         let oldUser = await userService.getUser({ socialID: fbUsers.socialID });
         if (oldUser)
-            res.redirect('http://localhost:4200/dashboard/' + oldUser._id + '/index');
+            res.redirect('http://localhost:4200/temp/' + oldUser._id );
         if (!oldUser) {
             let newUser = await userService.createUser(fbUsers)
             if (newUser) {
-                res.redirect('http://localhost:4200/dashboard/' + newUser._id + '/index');
+                res.redirect('http://localhost:4200/temp/' + newUser._id);
                 console.log("successfully saved to db")
             }
         }
@@ -170,12 +170,12 @@ router.get('/auth/linkedin/callback',
         let checkGmail = await userService.getUser({ emailAddress: inUsers.emailAddress });
         console.log(checkGmail)
         if (checkGmail != null) {
-            res.redirect('http://localhost:4200/dashboard/' + checkGmail._id + '/index');
+            res.redirect('http://localhost:4200/temp/' + checkGmail._id );
         } else if (oldUser)
-            res.redirect('http://localhost:4200/dashboard/' + oldUser._id + '/index');
+            res.redirect('http://localhost:4200/temp/' + oldUser._id );
         else if (!oldUser) {
             let newUser = await userService.createUser(inUsers)
-            res.redirect('http://localhost:4200/dashboard/' + newUser._id + '/index');
+            res.redirect('http://localhost:4200/temp/' + newUser._id );
             if (newUser) {
                 console.log("successfully saved to db")
             }

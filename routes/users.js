@@ -5,15 +5,15 @@ var userServ = require('../service/user.service')
 router.get('/', function (req, res, next) {
   res.send('respond with a resource');
 });
-router.post('/getuser', async function (req, res, next) {
-  console.log(req.body)
-  let user = await userServ.getUser({ _id: req.body.uid });
-  console.log(user)
-  if (user)
-    res.json({ success: 1, response: user })
-  else
-    res.json({ success: 0, response: null })
-});
+// router.post('/getuser', async function (req, res, next) {
+//   console.log(req.body)
+//   let user = await userServ.getUser({ _id: req.body.uid });
+//   console.log(user)
+//   if (user)
+//     res.json({ success: 1, response: user })
+//   else
+//     res.json({ success: 0, response: null })
+// });
 
 router.post('/updateUser', async function (req, res, next) {
   // let user = await userServ.updateUser(req.body);
@@ -74,7 +74,6 @@ router.post('/updateUserEmail', async function (req, res, next) {
   }
 
 })
-
 
 router.post('/signup', async function (req, res, next) {
   // res.json({ body: req.body })
