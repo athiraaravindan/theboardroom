@@ -3,11 +3,52 @@ var router = express.Router();
 const meetingService = require('../service/meeting.service');
 var moment = require('moment-timezone')
 var userServ = require('../service/user.service')
+var jwt = require('jsonwebtoken');
+var jwt_decode = require('jwt-decode');
+var nodemailer = require('nodemailer');
 
 const fs = require('fs');
 const readline = require('readline');
 const { google } = require('googleapis');
 
+var transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'akhil.bp@enfintechnologies.com',
+      pass: 'enfintech123'
+    }
+  });
+  router.post('/login', async function (req, res, next) {
+    // console.log(req.body)
+    let getUser = await userServ.getUser({ emailAddress: req.body.email,password: req.body.password });
+    if(getUser)
+    res.json({success:1,response:getUser})
+    else
+    res.json({success: 0,response:null})
+    
+    })
+  router.post('/signup', async function (req, res, next) {
+    // res.json({ body: req.body })
+    let user = {
+      emailAddress: req.body.email,
+      name: req.body.fname + ' ' + req.body.lname,
+      password: req.body.password
+    }
+    let checkGmail = await userServ.getUser({ emailAddress: user.emailAddress });
+    // console.log(checkGmail,"checkGmail")
+    if (checkGmail != null) {
+      res.json({success:0, response:"mail exist"})
+    } else{
+      var saveUser = await userServ.createUser(user);
+      if(saveUser)
+      res.json({success:1, response:saveUser})
+    }
+    // let user = await userServ.createUser({ _id: req.body.uid });
+    // if (user)
+    //   res.json({ success: 1, response: user })
+    // else
+    //   res.json({ success: 0, response: null })
+  });
 router.post('/getuser', async function (req, res, next) {
     console.log(req.body)
     let user = await userServ.getUser({ _id: req.body.uid });
@@ -20,12 +61,107 @@ router.post('/getuser', async function (req, res, next) {
   router.post('/forgot_password', async function (req, res, next) {
     console.log(req.body)
     let checkGmail = await userServ.getUser({ emailAddress: req.body.email });
+    console.log(checkGmail,"hhhhhhhhhhhhhhhhhhhh")
     if(checkGmail){
-        res.json({success:1,response:checkGmail})
+        // var user ={
+        //     email:checkGmail.email,
+        //     id:checkGmail._id
+        //   }
+          let expireTime = Math.floor(Date.now() / 1000) + (60 * 60 * 24);
+        
+          let token = await generateToken(expireTime);
+            // res.status(200).json({token:token})
+
+            let link = "http://localhost:4200/auth/verification/" + token.token;
+            const mailOptions = {
+                from: 'info@theboardroom.com', // sender address
+                to: req.body.email, // list of receivers
+                subject: 'Verification Mail', // Subject line
+      
+                html: "<div style='background-color:#02ff003b; padding: 30px; text-align:center;'><h2>The Boardroom</h2><h1 style='color:#f59802;' >Registration Successful</h1><a style='color:yellow; padding:10px; background-color:#35af35; font-size: 17px;    color: white; border-radius: 11px; ' href=" + link + ">Click here to verify your email</a></div>"
+              };
+              transporter.sendMail(mailOptions, function (err, info) {
+                if (err) {
+                  res.json({ response: "Invalid Email ID" })
+
+                //   console.log("ahhhhhhhhhhhhhhhhhh")
+      
+                }
+                else {
+                  res.json({ success: 1,response:req.body.email});
+                  // console.log("b")
+      
+                }
+              });
+      
+
+            // res.status(200).json({token:token})
+            function generateToken(user,expireTime) {
+            return new Promise((resolve, reject) => {
+              let payload = {  
+                aud:"1",
+                email: checkGmail.emailAddress,
+                id:checkGmail._id
+                // role: "req.body.role",
+              };
+              if(expireTime) { payload.exp = expireTime };
+          
+              jwt.sign(payload, 'BR_JWTSECRET', function (err, token) {
+                if(err) reject(err);
+                // console.log(expireTime)
+        
+                let response = { token: token};
+                // if(expireTime) { response.expireTime = expireTime; }
+                if(expireTime) { response.expireTime = expireTime; }
+                resolve(response);
+              });
+            });
+          }
     }else{
         res.json({success:0,response:null})
     }
     })
+  router.post('/forgot_password_token_chek', async function (req, res, next) {
+    var token = req.body.token;
+    var decoded = jwt_decode(token);
+    console.log(req.body)
+    res.json({success:1,response:decoded})
+  })
+  router.post('/update_forgot_password', async function (req, res, next) {
+    console.log(req.body)
+    // res.json({dd:req.body})
+      let getUser = await userServ.getUser({ _id: req.body.id});
+      if(getUser == null){
+        res.status(200).json({
+            success: 0,
+            response: "no user found"
+          });
+      }
+      console.log(getUser.password)
+        userServ.updateUser({
+          _id:req.body.id
+        },{
+          $set: 
+          {
+            password: req.body.password
+           } 
+        }).then((_doc)=>{
+          res.status(200).json({
+            success: 1,
+            response: "password updated"
+          });
+          console.log("here",_doc)
+        }).catch(()=>{
+          console.log("here",_doc)
+  
+          res.status(400).json({
+            success: 0,
+            response: "error "
+          });
+        })
+    
+  })
+
 router.post('/create_meeting', async function (req, res, next) {
     //     meetingService.createMeeting()
     // res.json({akhil:"response"})

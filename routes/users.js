@@ -75,39 +75,39 @@ router.post('/updateUserEmail', async function (req, res, next) {
 
 })
 
-router.post('/signup', async function (req, res, next) {
-  // res.json({ body: req.body })
-  let user = {
-    emailAddress: req.body.email,
-    name: req.body.fname + ' ' + req.body.lname,
-    password: req.body.password
-  }
-  let checkGmail = await userServ.getUser({ emailAddress: user.emailAddress });
-  // console.log(checkGmail,"checkGmail")
-  if (checkGmail != null) {
-    res.json({success:0, response:"mail exist"})
-  } else{
-    var saveUser = await userServ.createUser(user);
-    if(saveUser)
-    res.json({success:1, response:saveUser})
-  }
-  // let user = await userServ.createUser({ _id: req.body.uid });
-  // if (user)
-  //   res.json({ success: 1, response: user })
-  // else
-  //   res.json({ success: 0, response: null })
-});
+// router.post('/signup', async function (req, res, next) {
+//   // res.json({ body: req.body })
+//   let user = {
+//     emailAddress: req.body.email,
+//     name: req.body.fname + ' ' + req.body.lname,
+//     password: req.body.password
+//   }
+//   let checkGmail = await userServ.getUser({ emailAddress: user.emailAddress });
+//   // console.log(checkGmail,"checkGmail")
+//   if (checkGmail != null) {
+//     res.json({success:0, response:"mail exist"})
+//   } else{
+//     var saveUser = await userServ.createUser(user);
+//     if(saveUser)
+//     res.json({success:1, response:saveUser})
+//   }
+//   // let user = await userServ.createUser({ _id: req.body.uid });
+//   // if (user)
+//   //   res.json({ success: 1, response: user })
+//   // else
+//   //   res.json({ success: 0, response: null })
+// });
 
 
-router.post('/login', async function (req, res, next) {
-// console.log(req.body)
-let getUser = await userServ.getUser({ emailAddress: req.body.email,password: req.body.password });
-if(getUser)
-res.json({success:1,response:getUser})
-else
-res.json({success: 0,response:null})
+// router.post('/login', async function (req, res, next) {
+// // console.log(req.body)
+// let getUser = await userServ.getUser({ emailAddress: req.body.email,password: req.body.password });
+// if(getUser)
+// res.json({success:1,response:getUser})
+// else
+// res.json({success: 0,response:null})
 
-})
+// })
 
 router.post('/updatePassword', async function (req, res, next) {
   console.log(req.body)
@@ -145,5 +145,6 @@ router.post('/updatePassword', async function (req, res, next) {
     }
   
 })
+
 
 module.exports = router;
