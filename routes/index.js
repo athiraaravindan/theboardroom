@@ -6,7 +6,21 @@ const app = express(),
     auth = require('./../auth'),
     fbAuth = require('./../auth');
 const userService = require('../service/user.service')
+const hostPinService = require('../service/host_pin.service')
 const jwt = require('jsonwebtoken');
+
+var TOKENSECRET = process.env.TOKENSECRET;
+var BR_JWTSECRET = process.env.BR_JWTSECRET;
+var APP_URL = process.env.APP_URL;
+
+var FB_ID = process.env.FB_ID;
+var FB_SECRET = process.env.FB_SECRET;
+var FB_CALLBACK_URL = process.env.FB_CALLBACK_URL;
+
+var IN_ID = process.env.IN_ID
+var IN_SECRET = process.env.IN_SECRET
+var IN_CALLBACK_URL = process.env.IN_CALLBACK_URL
+
 
 const fs = require('fs');
 const readline = require('readline');
@@ -17,21 +31,19 @@ router.get('/test', function(req, res, next) {
 })
 router.get('/generateToken', async function(req, res, next) {
     var user ={
-      role:req.body.role,
-      firstName:req.body.firstName,
-      lastName:req.body.lastName
+      app:'theboardroom'
     }
-  
+  console.log(user,"fgfgfgfgffgfffgf")
     let token = await generateToken(user)
       res.status(200).json({token:token})
       function generateToken(user) {
       return new Promise((resolve, reject) => {
         let payload = {  
           aud:1,
-          name: "(req.body.firstName + ' ' + req.body.lastName)", 
+          name: TOKENSECRET, 
           role: 1,
         };
-        jwt.sign(payload, "TW_JWTSECRET", function (err, token) {
+        jwt.sign(payload, BR_JWTSECRET, function (err, token) {
           if(err) reject(err);
           let response = { token: token};
           resolve(response);
@@ -66,16 +78,31 @@ router.get('/auth/google/callback',
         let oldUser = await userService.getUser({ socialID: GmailUsers.socialID });
         let checkGmail = await userService.getUser({ emailAddress: GmailUsers.emailAddress });
         if (checkGmail != null) {
-            res.redirect('http://localhost:4200/temp/' + checkGmail._id );
+            res.redirect(APP_URL + checkGmail._id );
         }
         else if (oldUser) {
-            res.redirect('http://localhost:4200/temp/' + oldUser._id );
+            res.redirect(APP_URL + oldUser._id );
         }
         else {
+            let host = await hostPinService.getHost()
+            if (host) {
+                let hostPin = host.hostPin;
+                // let newUser = await userService.createUser(inUsers)
+                GmailUsers.hostPin = hostPin + 1
+                await hostPinService.updateHost({
+                    $set:
+                    {
+                        hostPin: hostPin + 1
+                    }
+                })
+            }
+            else if (host == null) {
+                host = await hostPinService.createHost()
+            }
             let newUser = await userService.createUser(GmailUsers)
             if (newUser) {
                 console.log("successfully saved to db")
-                res.redirect('http://localhost:4200/temp/' + newUser._id);
+                res.redirect(APP_URL + newUser._id);
             }
         }
         res.status(200).json({ success: 1, response: GmailUsers })
@@ -88,9 +115,9 @@ router.get('/auth/google/callback',
 var FacebookStrategy = require('passport-facebook').Strategy;
 
 passport.use(new FacebookStrategy({
-    clientID: '390004128233317',
-    clientSecret: 'dbea2f40a7c1233519e065eeb04b1adf',
-    callbackURL: "https://localhost:3000/auth/facebook/callback"
+    clientID: FB_ID,
+    clientSecret: FB_SECRET,
+    callbackURL: FB_CALLBACK_URL
 },
     async function (accessToken, refreshToken, profile, done) {
         return done(null, profile);
@@ -106,7 +133,7 @@ router.get('/auth/facebook/callback',
         failureRedirect: '/users'
     }),
     async function (req, res) {
-        console.log(req,"pppppppppppppppppppppppppppppppppppp")
+        console.log(req,"facebook")
         let fbUsers = {
             socialID: req.user.id,
             name: req.user.displayName,
@@ -117,11 +144,26 @@ router.get('/auth/facebook/callback',
         console.log(fbUsers, "fbUsers");
         let oldUser = await userService.getUser({ socialID: fbUsers.socialID });
         if (oldUser)
-            res.redirect('http://localhost:4200/temp/' + oldUser._id );
+            res.redirect(APP_URL + oldUser._id );
         if (!oldUser) {
+            let host = await hostPinService.getHost()
+            if (host) {
+                let hostPin = host.hostPin;
+                // let newUser = await userService.createUser(inUsers)
+                fbUsers.hostPin = hostPin + 1
+                await hostPinService.updateHost({
+                    $set:
+                    {
+                        hostPin: hostPin + 1
+                    }
+                })
+            }
+            else if (host == null) {
+                host = await hostPinService.createHost()
+            }
             let newUser = await userService.createUser(fbUsers)
             if (newUser) {
-                res.redirect('http://localhost:4200/temp/' + newUser._id);
+                res.redirect(APP_URL + newUser._id);
                 console.log("successfully saved to db")
             }
         }
@@ -138,9 +180,9 @@ router.use(session({ secret: 'abcde', resave: false, saveUninitialized: true, })
 router.use(passport.initialize());
 router.use(passport.session());
 passport.use(new LinkedInStrategy({
-    consumerKey: '86d1qf2ws4ccb4',
-    consumerSecret: '7fFnoXLXmVTFbpDT',
-    callbackURL: 'https://localhost:3000/auth/linkedin/callback',
+    consumerKey: IN_ID,
+    consumerSecret: IN_SECRET,
+    callbackURL: IN_CALLBACK_URL,
     profileFields: ['id', 'first-name', 'last-name', 'email-address', 'headline', 'picture-url'],
     scope: ['r_emailaddress', 'r_basicprofile', 'rw_nus']
 },
@@ -170,12 +212,27 @@ router.get('/auth/linkedin/callback',
         let checkGmail = await userService.getUser({ emailAddress: inUsers.emailAddress });
         console.log(checkGmail)
         if (checkGmail != null) {
-            res.redirect('http://localhost:4200/temp/' + checkGmail._id );
+            res.redirect(APP_URL + checkGmail._id );
         } else if (oldUser)
-            res.redirect('http://localhost:4200/temp/' + oldUser._id );
+            res.redirect(APP_URL + oldUser._id );
         else if (!oldUser) {
+            let host = await hostPinService.getHost()
+            if (host) {
+                let hostPin = host.hostPin;
+                // let newUser = await userService.createUser(inUsers)
+                inUsers.hostPin = hostPin + 1
+                await hostPinService.updateHost({
+                    $set:
+                    {
+                        hostPin: hostPin + 1
+                    }
+                })
+            }
+            else if (host == null) {
+                host = await hostPinService.createHost()
+            }
             let newUser = await userService.createUser(inUsers)
-            res.redirect('http://localhost:4200/temp/' + newUser._id );
+            res.redirect(APP_URL + newUser._id );
             if (newUser) {
                 console.log("successfully saved to db")
             }

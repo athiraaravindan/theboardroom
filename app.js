@@ -13,6 +13,8 @@ mongoose.connect('mongodb://localhost/BoardRooM')
 //gapi*****************************************************************
 const express = require('express');
   const app = express();
+require('dotenv').config()
+
 //     passport = require('passport'),
 //     auth = require('./auth'),
 //     cookieParser = require('cookie-parser'),
@@ -81,6 +83,11 @@ const corsOptions = {
   origin: '*',
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }
+
+// if (process.env.NODE_ENV !== 'production') {
+//   require('dotenv').load();
+// }
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -90,7 +97,9 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 // app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+// app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'dist/theboardroom')));
+
 app.use('/users', ejwt({ 
   secret: "TW_JWTSECRET",
   audience: [1,2,3],

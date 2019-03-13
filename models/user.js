@@ -13,7 +13,8 @@ const schema = new mongoose.Schema({
     company_size:       { type: String, default: "" },
     country:            { type: String, default: "" },
     time_zone:          { type: String, default: "" },
-    login_type:         { type: String, default: "ordinary" }
+    login_type:         { type: String, default: "ordinary" },
+    hostPin :           { type: String, default: "1000" }
 
 },{ 
     timestamps: true 
