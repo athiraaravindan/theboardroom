@@ -40,8 +40,8 @@ router.post('/login', async function (req, res, next) {
 router.post('/signup', async function (req, res, next) {
     // res.json({ body: req.body })
     try {
-        console.log(typeof(parseInt(saltRounds, 10)),saltRounds)
-        var hash = await bcrypt.hashSync(req.body.password,parseInt(saltRounds, 10))
+        console.log(typeof (parseInt(saltRounds, 10)), saltRounds)
+        var hash = await bcrypt.hashSync(req.body.password, parseInt(saltRounds, 10))
         // res.json({ succes:req.body.password})
         let user = {
             emailAddress: req.body.email,
@@ -73,7 +73,7 @@ router.post('/signup', async function (req, res, next) {
             if (saveUser)
                 res.json({ success: 1, response: saveUser })
         }
-    }catch(e) {
+    } catch (e) {
         console.log(e)
         res.json({ success: 0, response: "error" })
     }
@@ -162,7 +162,7 @@ router.post('/update_forgot_password', async function (req, res, next) {
             success: 0,
             response: "no user found"
         });
-    }else{
+    } else {
         console.log(getUser.password)
         userServ.updateUser({
             _id: req.body.id
@@ -179,7 +179,7 @@ router.post('/update_forgot_password', async function (req, res, next) {
                 console.log("here", _doc)
             }).catch(() => {
                 console.log("here", _doc)
-    
+
                 res.status(400).json({
                     success: 0,
                     response: "error "
@@ -330,17 +330,43 @@ router.post('/create_meeting', async function (req, res, next) {
                 //     userID: req.body.id
 
                 // }
-                let meeting = {
-                    UserID: req.body.id,
-                    agenda: req.body.agenda,
-                    topic: req.body.topic,
-                    meeting_date: startDateTime,
-                    meeting_start_time: req.body.meeting_start_time,
-                    meeting_duration: req.body.meeting_duration,
-                    time_zone: req.body.time_zone
+                if (req.body.action == "create") {
+                    let meeting = {
+                        UserID: req.body.id,
+                        agenda: req.body.agenda,
+                        topic: req.body.topic,
+                        meeting_date: startDateTime,
+                        meeting_start_time: req.body.meeting_start_time,
+                        meeting_duration: req.body.meeting_duration,
+                        time_zone: req.body.time_zone
+                    }
+                    let saveMeeting = await meetingService.createMeeting(meeting);
+                    res.json({ success: 1, response: saveMeeting })
+                }else if(req.body.action == "edit"){
+                    try {
+                        meetingService.updateMeeting({
+                            _id: req.body.id
+                        }, {
+                                $set:
+                                {
+                                    agenda: req.body.agenda,
+                                    topic: req.body.topic,
+                                    meeting_date: req.body.meeting_date,
+                                    meeting_start_time: req.body.meeting_start_time,
+                                    meeting_duration: req.body.meeting_duration,
+                                    time_zone: req.body.time_zone
+                                }
+                            }).then((_doc) => {
+                                console.log(_doc)
+                                res.status(200).json({
+                                    success: 1, response: "schedule updated"
+                                });
+                            })
+                    }
+                    catch (e) {
+                        res.json({ success: 0, response: null })
+                    }
                 }
-                let saveMeeting = await meetingService.createMeeting(meeting);
-                res.json({ success: 1, response: saveMeeting })
             }
         });
         //   calendar.events.list({
@@ -396,34 +422,34 @@ router.post('/delete_meeting', async function (req, res, next) {
     console.log(delete_meeting)
     res.json({ success: delete_meeting, response: req.body.id })
 })
-router.post('/update_meeting', async function (req, res, next) {
-    console.log(req.body)
+// router.post('/update_meeting', async function (req, res, next) {
+//     console.log(req.body)
 
-    try {
-        meetingService.updateMeeting({
-            _id: req.body.id
-        }, {
-                $set:
-                {
-                    agenda: req.body.agenda,
-                    topic: req.body.topic,
-                    meeting_date: req.body.meeting_date,
-                    meeting_start_time: req.body.meeting_start_time,
-                    meeting_duration: req.body.meeting_duration,
-                    time_zone: req.body.time_zone
-                }
-            }).then((_doc) => {
-                console.log(_doc)
-                res.status(200).json({
-                    success: 1, response: "schedule updated"
-                });
-            })
-    }
-    catch (e) {
-        res.json({ success: 0, response: null })
-    }
+//     try {
+//         meetingService.updateMeeting({
+//             _id: req.body.id
+//         }, {
+//                 $set:
+//                 {
+//                     agenda: req.body.agenda,
+//                     topic: req.body.topic,
+//                     meeting_date: req.body.meeting_date,
+//                     meeting_start_time: req.body.meeting_start_time,
+//                     meeting_duration: req.body.meeting_duration,
+//                     time_zone: req.body.time_zone
+//                 }
+//             }).then((_doc) => {
+//                 console.log(_doc)
+//                 res.status(200).json({
+//                     success: 1, response: "schedule updated"
+//                 });
+//             })
+//     }
+//     catch (e) {
+//         res.json({ success: 0, response: null })
+//     }
 
-})
+// })
 
 // router.post('/schedule_meeting', async function (req, res, next) {
 //     res.json({response:req.body})
