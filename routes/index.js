@@ -9,6 +9,7 @@ const userService = require('../service/user.service')
 const hostPinService = require('../service/host_pin.service')
 const jwt = require('jsonwebtoken');
 
+
 var TOKENSECRET = process.env.TOKENSECRET;
 var BR_JWTSECRET = process.env.BR_JWTSECRET;
 var APP_URL = process.env.APP_URL;

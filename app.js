@@ -78,7 +78,7 @@ require('dotenv').config()
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var meetingRouter = require('./routes/meetings');
-
+var TOKENSECRET = process.env.TOKENSECRET;
 const corsOptions = {
   origin: '*',
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
@@ -101,7 +101,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'dist/theboardroom')));
 
 app.use('/users', ejwt({ 
-  secret: "TW_JWTSECRET",
+  secret: TOKENSECRET,
   audience: [1,2,3],
   algorithm: 'HS256'
   // issuer: 'https://localhost:3000/'

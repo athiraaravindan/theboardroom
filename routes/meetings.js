@@ -13,9 +13,13 @@ const fs = require('fs');
 const readline = require('readline');
 const { google } = require('googleapis');
 
+const bcrypt = require('bcrypt');
+
 var APP_EMAIL = process.env.APP_EMAIL
 var EMAIL_PASSWORD = process.env.EMAIL_PASSWORD
 var FORGOT_PASSWORD_URL = process.env.FORGOT_PASSWORD_URL
+const saltRounds = process.env.saltRounds
+
 var transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -24,9 +28,10 @@ var transporter = nodemailer.createTransport({
     }
 });
 router.post('/login', async function (req, res, next) {
-    // console.log(req.body)
-    let getUser = await userServ.getUser({ emailAddress: req.body.email, password: req.body.password });
-    if (getUser)
+    let getUser = await userServ.getUser({ emailAddress: req.body.email });
+    let dbhash = getUser.password
+    let check = bcrypt.compareSync(req.body.password, dbhash); // true
+    if (check)
         res.json({ success: 1, response: getUser })
     else
         res.json({ success: 0, response: null })
@@ -35,10 +40,13 @@ router.post('/login', async function (req, res, next) {
 router.post('/signup', async function (req, res, next) {
     // res.json({ body: req.body })
     try {
+        console.log(typeof(parseInt(saltRounds, 10)),saltRounds)
+        var hash = await bcrypt.hashSync(req.body.password,parseInt(saltRounds, 10))
+        // res.json({ succes:req.body.password})
         let user = {
             emailAddress: req.body.email,
             name: req.body.fname + ' ' + req.body.lname,
-            password: req.body.password
+            password: hash
         }
         let checkGmail = await userServ.getUser({ emailAddress: user.emailAddress });
         // console.log(checkGmail,"checkGmail")
@@ -65,7 +73,8 @@ router.post('/signup', async function (req, res, next) {
             if (saveUser)
                 res.json({ success: 1, response: saveUser })
         }
-    } catch (e) {
+    }catch(e) {
+        console.log(e)
         res.json({ success: 0, response: "error" })
     }
 });
@@ -89,7 +98,7 @@ router.post('/forgot_password', async function (req, res, next) {
         let token = await generateToken(expireTime);
         // res.status(200).json({token:token})
 
-        let link = FORGOT_PASSWORD_URL  + token.token;
+        let link = FORGOT_PASSWORD_URL + token.token;
         const mailOptions = {
             from: 'info@theboardroom.com', // sender address
             to: req.body.email, // list of receivers
@@ -153,29 +162,30 @@ router.post('/update_forgot_password', async function (req, res, next) {
             success: 0,
             response: "no user found"
         });
+    }else{
+        console.log(getUser.password)
+        userServ.updateUser({
+            _id: req.body.id
+        }, {
+                $set:
+                {
+                    password: await bcrypt.hashSync(req.body.password, parseInt(saltRounds, 10))
+                }
+            }).then((_doc) => {
+                res.status(200).json({
+                    success: 1,
+                    response: "password updated"
+                });
+                console.log("here", _doc)
+            }).catch(() => {
+                console.log("here", _doc)
+    
+                res.status(400).json({
+                    success: 0,
+                    response: "error "
+                });
+            })
     }
-    console.log(getUser.password)
-    userServ.updateUser({
-        _id: req.body.id
-    }, {
-            $set:
-            {
-                password: req.body.password
-            }
-        }).then((_doc) => {
-            res.status(200).json({
-                success: 1,
-                response: "password updated"
-            });
-            console.log("here", _doc)
-        }).catch(() => {
-            console.log("here", _doc)
-
-            res.status(400).json({
-                success: 0,
-                response: "error "
-            });
-        })
 
 })
 

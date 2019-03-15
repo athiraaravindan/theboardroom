@@ -1,7 +1,10 @@
 var express = require('express');
 var router = express.Router();
 var userServ = require('../service/user.service')
-/* GET users listing. */
+
+const bcrypt = require('bcrypt');
+const saltRounds = process.env.saltRounds
+
 router.get('/', function (req, res, next) {
   res.send('respond with a resource');
 });
@@ -111,17 +114,18 @@ router.post('/updateUserEmail', async function (req, res, next) {
 
 router.post('/updatePassword', async function (req, res, next) {
   console.log(req.body)
-  
-    let getUser = await userServ.getUser({ _id: req.body._id});
-    console.log(getUser.password,req.body.oldPassword)
-    if(getUser.password == req.body.oldPassword){
+  let getUser = await userServ.getUser({ _id: req.body._id});
+  let hashNewPassword =  await bcrypt.hashSync(req.body.new_password, parseInt(saltRounds, 10))
+  let check = bcrypt.compareSync(req.body.oldPassword, getUser.password); // true
+
+    if(check){
 
       userServ.updateUser({
         _id:req.body._id
       },{
         $set: 
         {
-          password: req.body.new_password
+          password: hashNewPassword
          } 
       }).then((_doc)=>{
         res.status(200).json({
