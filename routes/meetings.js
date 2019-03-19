@@ -208,6 +208,46 @@ router.post('/create_meeting', async function (req, res, next) {
             // Authorize a client with credentials, then call the Google Calendar API.
             authorize(JSON.parse(content), listEvents);
         });
+    }else{
+        var momentFormate = moment.tz(req.body.meeting_date + " " + req.body.meeting_start_time, req.body.time_zone);
+        var startDateTime = momentFormate.utc().format();
+        if (req.body.action == "create") {
+            let meeting = {
+                UserID: req.body.id,
+                agenda: req.body.agenda,
+                topic: req.body.topic,
+                meeting_date: startDateTime,
+                meeting_start_time: req.body.meeting_start_time,
+                meeting_duration: req.body.meeting_duration,
+                time_zone: req.body.time_zone
+            }
+            let saveMeeting = await meetingService.createMeeting(meeting);
+            res.json({ success: 1, response: saveMeeting })
+        }else if(req.body.action == "edit"){
+            try {
+                meetingService.updateMeeting({
+                    _id: req.body.id
+                }, {
+                        $set:
+                        {
+                            agenda: req.body.agenda,
+                            topic: req.body.topic,
+                            meeting_date: startDateTime,
+                            meeting_start_time: req.body.meeting_start_time,
+                            meeting_duration: req.body.meeting_duration,
+                            time_zone: req.body.time_zone
+                        }
+                    }).then((_doc) => {
+                        console.log(_doc)
+                        res.status(200).json({
+                            success: 1, response: "schedule updated"
+                        });
+                    })
+            }
+            catch (e) {
+                res.json({ success: 0, response: null })
+            }
+        }
     }
 
     /**
@@ -351,7 +391,7 @@ router.post('/create_meeting', async function (req, res, next) {
                                 {
                                     agenda: req.body.agenda,
                                     topic: req.body.topic,
-                                    meeting_date: req.body.meeting_date,
+                                    meeting_date: startDateTime,
                                     meeting_start_time: req.body.meeting_start_time,
                                     meeting_duration: req.body.meeting_duration,
                                     time_zone: req.body.time_zone

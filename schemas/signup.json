@@ -1,0 +1,25 @@
+{
+    "title": "signup",
+    "description": "describes properties required to updateUser api",
+    "type": "object",
+    "properties": {
+        "password": {
+            "type": "string",
+            "description": " password"
+        },
+        "email": {
+            "type": "string",
+            "description": " email"
+        },
+        "fname": {
+            "type": "string",
+            "description": " first name"
+        },
+        "lname": {
+            "type": "string",
+            "description": " last name"
+        }     
+    },
+    "required": ["email","password"]
+}
+  

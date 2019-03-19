@@ -1,0 +1,17 @@
+{
+    "title": "login",
+    "description": "describes properties required to updateUser api",
+    "type": "object",
+    "properties": {
+        "email": {
+            "type": "string",
+            "description": " email"
+        },
+        "password": {
+            "type": "string",
+            "description": " password"
+        }    
+    },
+    "required": ["email","password"]
+}
+  

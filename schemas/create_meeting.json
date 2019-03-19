@@ -1,0 +1,57 @@
+{
+    "title": "create_meeting",
+    "description": "describes properties required to create_meeting api",
+    "type": "object",
+    "properties": {
+        "sentToCalender": {
+            "type": "boolean",
+            "description": " sentToCalender"
+        },
+        "meeting_duration": {
+            "type": "string",
+            "description": " meeting_duration"
+        },
+        "meeting_date": {
+            "type": "string",
+            "description": " time_zone "
+        },
+        "time_zone": {
+            "type": "string",
+            "description": " time_zone"
+        },
+        "meeting_start_time": {
+            "type": "string",
+            "description": " meeting_start_time"
+        },
+        "topic": {
+            "type": "string",
+            "description": " topic"
+        },
+        "agenda": {
+            "type": "string",
+            "description": " agenda"
+        },
+        "startDateTime": {
+            "type": "string",
+            "description": " startDateTime"
+        },
+        "endDateTime": {
+            "type": "string",
+            "description": " endDateTime"
+        },
+        "mail": {
+            "type": "string",
+            "description": " mail"
+        },
+        "action": {
+            "type": "string",
+            "description": " action"
+        },
+        "id": {
+            "type": "string",
+            "description": " id"
+        }                
+    },
+    "required": ["sentToCalender","meeting_duration","id","action","mail","meeting_date","time_zone","topic","meeting_start_time","agenda"] 
+}
+  

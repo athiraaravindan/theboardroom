@@ -112,6 +112,10 @@ router.post('/updateUserEmail', async function (req, res, next) {
 
 // })
 
+router.get('/generateToken', async function (req, res, next) {
+res.json({dd:"fff"})
+})
+
 router.post('/updatePassword', async function (req, res, next) {
   console.log(req.body)
   let getUser = await userServ.getUser({ _id: req.body._id});

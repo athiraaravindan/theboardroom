@@ -100,19 +100,20 @@ app.use(express.urlencoded({ extended: false }));
 // app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'dist/theboardroom')));
 
+app.use('/', indexRouter);
+
 app.use('/users', ejwt({ 
   secret: TOKENSECRET,
   audience: [1,2,3],
   algorithm: 'HS256'
   // issuer: 'https://localhost:3000/'
-}).unless({path: ['/generateToken']}), usersRouter);
-app.use('/', indexRouter);
-app.use('/meeting', meetingRouter);
-// app.use('/users', usersRouter);
+}).unless({path: ['/users/generateToken']}), usersRouter);
 
-// app.use('/users', usersRouter);
-
-// catch 404 and forward to error handler
+app.use('/meeting', ejwt({ 
+  secret: TOKENSECRET,
+  audience: [1,2,3],
+  algorithm: 'HS256'
+}).unless({path: ['/meeting/login','/meeting/signup','/meeting/getuser','/meeting/forgot_password','/meeting/forgot_password_token_chek','/meeting/update_forgot_password']}), meetingRouter);
 app.use(function(req, res, next) {
   next(createError(404));
 });

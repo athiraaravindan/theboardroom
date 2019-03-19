@@ -1,0 +1,41 @@
+{
+    "title": "updateUser api",
+    "description": "describes properties required to updateUser api",
+    "type": "object",
+    "properties": {
+        "_id": {
+            "type": "string",
+            "description": " id"
+        },
+        "name": {
+            "type": "string",
+            "description": " name"
+        },
+        "emailAddress": {
+            "type": "string",
+            "description": " email"
+        },
+        "phone": {
+            "type": "number",
+            "description": " phone"
+        },
+        "company": {
+            "type": "string",
+            "description": " company"
+        },
+        "company_size": {
+            "type": "string",
+            "description": " company_size"
+        },
+        "country": {
+            "type": "string",
+            "description": " country"
+        },
+        "time_zone": {
+            "type": "string",
+            "description": " time_zone"
+        }          
+    },
+    "required": ["name","phone","company","company_size","country","time_zone"]
+}
+  
