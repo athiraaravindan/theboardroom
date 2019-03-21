@@ -4,7 +4,6 @@ const meetingService = require('../service/meeting.service');
 var moment = require('moment-timezone')
 var userServ = require('../service/user.service')
 var hostPinService = require('../service/host_pin.service')
-
 var jwt = require('jsonwebtoken');
 var jwt_decode = require('jwt-decode');
 var nodemailer = require('nodemailer');
@@ -19,6 +18,7 @@ var APP_EMAIL = process.env.APP_EMAIL
 var EMAIL_PASSWORD = process.env.EMAIL_PASSWORD
 var FORGOT_PASSWORD_URL = process.env.FORGOT_PASSWORD_URL
 const saltRounds = process.env.saltRounds
+const BR_JWTSECRET = process.env.BR_JWTSECRET
 
 var transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -93,11 +93,15 @@ router.post('/forgot_password', async function (req, res, next) {
     let checkGmail = await userServ.getUser({ emailAddress: req.body.email });
     console.log(checkGmail)
     if (checkGmail) {
-        let expireTime = Math.floor(Date.now() / 1000) + (60 * 60 * 24);
-
-        let token = await generateToken(expireTime);
+        let expireTime = Math.floor(Date.now() / 1000) + (60 * 60);
+        var user ={
+            role:req.body.email,
+            firstName:"req.body.firstName",
+            lastName:"req.body.lastName"
+          }
+        let token = await generateToken(user,expireTime);
         // res.status(200).json({token:token})
-
+console.log(token.token,"ffff")
         let link = FORGOT_PASSWORD_URL + token.token;
         const mailOptions = {
             from: 'info@theboardroom.com', // sender address
@@ -132,7 +136,7 @@ router.post('/forgot_password', async function (req, res, next) {
                 };
                 if (expireTime) { payload.exp = expireTime };
 
-                jwt.sign(payload, 'BR_JWTSECRET', function (err, token) {
+                jwt.sign(payload, BR_JWTSECRET, function (err, token) {
                     if (err) reject(err);
                     // console.log(expireTime)
 
@@ -150,7 +154,7 @@ router.post('/forgot_password', async function (req, res, next) {
 router.post('/forgot_password_token_chek', async function (req, res, next) {
     var token = req.body.token;
     var decoded = jwt_decode(token);
-    console.log(req.body)
+    console.log(decoded,"hhhhhh")
     res.json({ success: 1, response: decoded })
 })
 router.post('/update_forgot_password', async function (req, res, next) {

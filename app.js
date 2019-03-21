@@ -111,9 +111,9 @@ app.use('/users', ejwt({
 
 app.use('/meeting', ejwt({ 
   secret: TOKENSECRET,
-  audience: [1,2,3],
+  // audience: [1,2,3],
   algorithm: 'HS256'
-}).unless({path: ['/meeting/login','/meeting/signup','/meeting/getuser','/meeting/forgot_password','/meeting/forgot_password_token_chek','/meeting/update_forgot_password']}), meetingRouter);
+}).unless({path: ['/meeting/login','/meeting/signup','/meeting/getuser','/meeting/forgot_password','/meeting/update_forgot_password']}), meetingRouter);
 app.use(function(req, res, next) {
   next(createError(404));
 });
