@@ -95,11 +95,11 @@ router.post('/forgot_password', async function (req, res, next) {
     if (checkGmail) {
         let expireTime = Math.floor(Date.now() / 1000) + (60 * 60);
         var user ={
-            role:req.body.email,
-            firstName:"req.body.firstName",
-            lastName:"req.body.lastName"
+        //     role:req.body.email,
+        //     firstName:"req.body.firstName",
+        //     lastName:"req.body.lastName"
           }
-        let token = await generateToken(user,expireTime);
+        let token = await generateToken(expireTime);
         // res.status(200).json({token:token})
 console.log(token.token,"ffff")
         let link = FORGOT_PASSWORD_URL + token.token;
@@ -126,7 +126,7 @@ console.log(token.token,"ffff")
 
 
         // res.status(200).json({token:token})
-        function generateToken(user, expireTime) {
+        function generateToken(expireTime) {
             return new Promise((resolve, reject) => {
                 let payload = {
                     aud: "1",
